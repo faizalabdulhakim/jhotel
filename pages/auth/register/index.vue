@@ -13,7 +13,7 @@
                 <v-text-field
                   :rules="[ruleRequired, ruleName]"
                   v-model="name"
-                  prepend-inner-icon="fluent:mail-24-regular"
+                  prepend-icon="mdi-account"
                   id="name"
                   name="name"
                 />
@@ -25,7 +25,7 @@
                 <v-text-field
                   :rules="[ruleRequired, ruleEmail]"
                   v-model="email"
-                  prepend-inner-icon="fluent:mail-24-regular"
+                  prepend-icon="mdi-email"
                   id="email"
                   name="email"
                   type="email"
@@ -38,7 +38,7 @@
                 <v-text-field
                   :rules="[ruleRequired, rulePassLen]"
                   v-model="password"
-                  prepend-inner-icon="fluent:password-20-regular"
+                  prepend-icon="mdi-lock"
                   id="password"
                   name="password"
                   type="password"
