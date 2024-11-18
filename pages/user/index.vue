@@ -4,7 +4,7 @@
     <div v-if="users.length === 0">No data users</div>
     <div v-else>
       <v-container fluid>
-        <DataTable
+        <DataTableUser
           :items="users.data"
           @refresh="refreshUsers"
           @create="addUser"
