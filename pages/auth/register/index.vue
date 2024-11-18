@@ -56,11 +56,9 @@
             </v-form>
             <p class="text-body-2 mt-4">
               <span
-                >Don't have an account?
-                <NuxtLink
-                  to="/auth/register"
-                  class="font-weight-bold text-primary"
-                  >Register</NuxtLink
+                >Already have an account?
+                <NuxtLink to="/auth/login" class="font-weight-bold text-primary"
+                  >Login</NuxtLink
                 ></span
               >
             </p>

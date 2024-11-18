@@ -12,12 +12,7 @@
         ></img>
       </template>
 
-      <v-icon icon="$vuetify" />
-      <v-btn icon>
-        <v-icon>mdi-magnify</v-icon>
-      </v-btn>
-
-      <v-btn>
+      <v-btn @click="logout">
         <v-icon>mdi-logout</v-icon>
         Logout
       </v-btn>
@@ -47,3 +42,14 @@
     </v-main>
   </v-layout>
 </template>
+
+
+<script setup>
+
+function logout () {
+   const authCookie = useCookie('token')
+   authCookie.value = null
+   navigateTo('/auth/login')
+}
+
+</script>
