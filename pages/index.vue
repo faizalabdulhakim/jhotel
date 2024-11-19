@@ -12,8 +12,16 @@
         :aggregate="rooms.data?.length"
         icon="mdi-bed-queen"
       />
-      <Card name="Total Reservation" aggregate="100+" icon="mdi-note-outline" />
-      <Card name="Total Revenue" aggregate="$10.000" icon="mdi-currency-usd" />
+      <Card
+        name="Total Reservation"
+        :aggregate="reservations.data?.length"
+        icon="mdi-note-outline"
+      />
+      <Card
+        name="Total Revenue"
+        :aggregate="`$ ${revenue?.data}`"
+        icon="mdi-currency-usd"
+      />
     </div>
   </NuxtLayout>
 </template>
@@ -23,9 +31,10 @@ const config = useRuntimeConfig();
 
 const users = ref([]);
 const rooms = ref([]);
+const reservations = ref([]);
+const revenue = ref([]);
 const apiUrl = config.public.API_BASE_URL;
 
-// Fetch all users
 const fetchUsers = async () => {
   const token = useCookie("token");
   try {
@@ -54,8 +63,39 @@ const fetchRooms = async () => {
   }
 };
 
+const fetchReservations = async () => {
+  const token = useCookie("token");
+  try {
+    reservations.value = await $fetch(`${apiUrl}/reservation`, {
+      method: "GET",
+      headers: {
+        Authorization: `${token.value}`,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching reservation:", error);
+  }
+};
+
+const fetchRevenue = async () => {
+  const token = useCookie("token");
+  try {
+    revenue.value = await $fetch(`${apiUrl}/reservation/revenue`, {
+      method: "GET",
+      headers: {
+        Authorization: `${token.value}`,
+      },
+    });
+    console.log(revenue.value.data);
+  } catch (error) {
+    console.error("Error fetching revenue:", error);
+  }
+};
+
 onMounted(() => {
   fetchUsers();
   fetchRooms();
+  fetchReservations();
+  fetchRevenue();
 });
 </script>

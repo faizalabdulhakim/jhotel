@@ -2,14 +2,6 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
   const publicRoutes = ["/auth/login", "/auth/register"];
   const token = useCookie("token").value;
 
-  // if (!publicRoutes.includes(to.path) && !token) {
-  //   return navigateTo("/auth/login");
-  // }
-
-  // if (publicRoutes.includes(to.path) && status) {
-  //   return navigateTo("/");
-  // }
-
   try {
     const config = useRuntimeConfig();
     const apiUrl = config.public.API_BASE_URL;
