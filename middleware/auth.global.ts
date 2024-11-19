@@ -27,7 +27,7 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
       return navigateTo("/");
     }
   } catch (error) {
-    console.error("Token validation error:", error);
+    // console.error("Token validation error:", error);
     if (!publicRoutes.includes(to.path)) {
       return navigateTo("/auth/login");
     }

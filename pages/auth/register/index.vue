@@ -7,6 +7,17 @@
             <h1>Register</h1>
             <p class="text-medium-emphasis">Register to get account</p>
 
+            <v-alert
+              v-if="errors"
+              closable
+              :text="error"
+              type="error"
+              class="mt-4"
+              @click:close="errors = null"
+              v-for="(error, index) in errors"
+              :key="index"
+            />
+
             <v-form @submit.prevent="submit" class="mt-7">
               <div class="mt-1">
                 <label class="label text-grey-darken-2" for="name">Name</label>
@@ -85,6 +96,7 @@
 const name = ref("");
 const email = ref("");
 const password = ref("");
+const errors = ref([]);
 
 const { ruleName, ruleEmail, rulePassLen, ruleRequired } = useFormRules();
 
@@ -105,12 +117,16 @@ const submit = async () => {
         password: password.value,
       }),
       headers: { "Content-Type": "application/json" },
+      onResponseError({ response }) {
+        throw response._data;
+      },
     });
     if (response) {
       navigateTo("/auth/login");
     }
-  } catch (error) {
-    console.error("Error registering user:", error);
+  } catch (errs) {
+    errors.value = errs?.errors || "An unexpected error occurred!";
+    console.error("Error registering user:", errors.value);
   }
 };
 </script>

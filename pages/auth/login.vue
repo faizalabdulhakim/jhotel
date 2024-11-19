@@ -9,6 +9,15 @@
               Enter your details to get started
             </p>
 
+            <v-alert
+              v-if="error"
+              closable
+              :text="error"
+              type="error"
+              class="mt-4"
+              @click:close="error = null"
+            />
+
             <v-form @submit.prevent="submit" class="mt-7">
               <div class="mt-1">
                 <label class="label text-grey-darken-2" for="email"
@@ -78,6 +87,7 @@
 <script setup>
 const email = ref("");
 const password = ref("");
+const error = ref("");
 
 const { ruleEmail, rulePassLen, ruleRequired } = useFormRules();
 
@@ -87,22 +97,25 @@ const apiUrl = config.public.API_BASE_URL;
 
 const submit = async () => {
   if (!email.value || !password.value) {
+    error.value = "Email and password are required!";
     return;
   }
 
   try {
     const response = await $fetch(`${apiUrl}/auth/login`, {
       method: "POST",
-      body: JSON.stringify({ email: email.value, password: password.value }),
+      body: { email: email.value, password: password.value },
       headers: { "Content-Type": "application/json" },
+      onResponseError({ response }) {
+        throw response._data;
+      },
     });
-    if (response) {
-      const token = useCookie("token");
-      token.value = response.token;
-      navigateTo("/");
-    }
-  } catch (error) {
-    console.error("Error logging in:", error);
+
+    const token = useCookie("token");
+    token.value = response.token;
+    navigateTo("/");
+  } catch (err) {
+    error.value = err?.message || "An unexpected error occurred!";
   }
 };
 </script>
