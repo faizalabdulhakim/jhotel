@@ -1,8 +1,7 @@
 <template>
   <NuxtLayout>
     <h1>User Page</h1>
-    <div v-if="users.length === 0">No data users</div>
-    <div v-else>
+    <div>
       <v-container fluid>
         <DataTableUser
           :items="users.data"
@@ -10,6 +9,7 @@
           @create="addUser"
           @update="updateUser"
           @delete="deleteUser"
+          @error="handleError"
         />
       </v-container>
     </div>
@@ -22,6 +22,7 @@ const config = useRuntimeConfig();
 const users = ref([]);
 const token = useCookie("token");
 const apiUrl = config.public.API_BASE_URL;
+const error = ref(null);
 
 // Fetch all users
 const fetchUsers = async () => {
@@ -31,8 +32,9 @@ const fetchUsers = async () => {
         Authorization: `${token.value}`,
       },
     });
-  } catch (error) {
-    console.error("Error fetching users:", error);
+  } catch (err) {
+    handleError(err);
+    console.error("Error fetching users:", err);
   }
 };
 
@@ -45,6 +47,10 @@ const refreshUsers = async () => {
   await fetchUsers();
 };
 
+const handleError = (err) => {
+  error.value = err?.message || "An unexpected error occurred!";
+};
+
 // Add a new user
 const addUser = async (newUser) => {
   try {
@@ -55,10 +61,12 @@ const addUser = async (newUser) => {
         "Content-Type": "application/json",
         Authorization: `${token.value}`,
       },
+    }).then(() => {
+      refreshUsers();
     });
-    await refreshUsers();
-  } catch (error) {
-    console.error("Error adding user:", error);
+  } catch (err) {
+    handleError(err);
+    console.error("Error adding user:", err);
   }
 };
 
@@ -72,10 +80,12 @@ const updateUser = async (updatedUser) => {
         "Content-Type": "application/json",
         Authorization: `${token.value}`,
       },
+    }).then(() => {
+      refreshUsers();
     });
-    await refreshUsers();
-  } catch (error) {
-    console.error("Error updating user:", error);
+  } catch (err) {
+    handleError(err);
+    console.error("Error updating user:", err);
   }
 };
 
@@ -87,10 +97,12 @@ const deleteUser = async (userId) => {
       headers: {
         Authorization: `${token.value}`,
       },
+    }).then(() => {
+      refreshUsers();
     });
-    await refreshUsers();
-  } catch (error) {
-    console.error("Error deleting user:", error);
+  } catch (err) {
+    handleError(err);
+    console.error("Error deleting user:", err);
   }
 };
 </script>

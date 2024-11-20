@@ -113,6 +113,7 @@ const submit = async () => {
 
     const token = useCookie("token");
     token.value = response.token;
+    error.value = null;
     navigateTo("/");
   } catch (err) {
     error.value = err?.message || "An unexpected error occurred!";
