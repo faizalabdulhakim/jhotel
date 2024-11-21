@@ -67,6 +67,7 @@ const addUser = async (newUser) => {
   } catch (err) {
     handleError(err);
     console.error("Error adding user:", err);
+    throw err;
   }
 };
 

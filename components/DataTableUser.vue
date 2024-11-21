@@ -2,33 +2,45 @@
   <v-data-table-server
     :headers="headers"
     :items="serverItems"
+    density="compact"
     v-model:items-per-page="itemsPerPage"
     :items-length="totalItems"
     :loading="loading"
     item-value="name"
     loading-text="Loading... Retrieving data"
     @update:options="loadItems"
+    v-on:update:items-per-page="loadItems"
     :search="search"
   >
     <template v-slot:top>
       <v-toolbar flat>
         <v-toolbar-title>Users</v-toolbar-title>
-        <v-divider class="mx-4" inset vertical></v-divider>
         <v-spacer></v-spacer>
 
         <v-text-field
           v-model="search"
           placeholder="Search by keywords..."
           prepend-inner-icon="mdi-magnify"
+          variant="outlined"
           density="compact"
           class="mt-6"
+          style="max-width: 250px"
           @input="refreshSearch"
           clearable
         ></v-text-field>
 
-        <v-dialog v-model="dialog" max-width="500px">
+        <v-dialog v-model="dialog" max-width="500px" persistent>
           <template v-slot:activator="{ props }">
-            <v-btn color="primary" dark v-bind="props"> Add User </v-btn>
+            <v-btn
+              color="primary"
+              dark
+              v-bind="props"
+              variant="tonal"
+              class="mx-2"
+              prepend-icon="mdi-account-plus"
+            >
+              Add User
+            </v-btn>
           </template>
           <v-card>
             <v-card-title>
@@ -39,13 +51,14 @@
               <v-container>
                 <v-alert
                   v-if="alertMessage"
+                  title="Create User Failed"
                   type="error"
-                  dismissible
+                  closable
+                  density="compact"
                   class="mb-4"
                   @click:close="alertMessage = ''"
-                >
-                  {{ alertMessage }}
-                </v-alert>
+                  v-html="formattedAlertMessage"
+                />
 
                 <v-row>
                   <v-col cols="12">
@@ -59,6 +72,7 @@
                   <v-col cols="12">
                     <v-text-field
                       v-model="editedItem.email"
+                      type="email"
                       required
                       prepend-inner-icon="mdi-email"
                       label="Email"
@@ -72,6 +86,15 @@
                       :items="['admin', 'guest']"
                       label="Role"
                     ></v-select>
+                  </v-col>
+                  <v-col cols="12">
+                    <v-text-field
+                      v-model="editedItem.password"
+                      required
+                      type="password"
+                      prepend-inner-icon="mdi-lock"
+                      label="Password"
+                    ></v-text-field>
                   </v-col>
                 </v-row>
               </v-container>
@@ -146,13 +169,16 @@ export default {
     loading: true,
     totalItems: 0,
     editedIndex: -1,
-    editedItem: { name: "", email: "", role: "" },
-    defaultItem: { name: "", email: "", role: "" },
+    editedItem: { name: "", email: "", role: "", password: "" },
+    defaultItem: { name: "", email: "", role: "", password: "" },
   }),
 
   computed: {
     formTitle() {
       return this.editedIndex === -1 ? "New User" : "Edit User";
+    },
+    formattedAlertMessage() {
+      return this.alertMessage.replace(/\n/g, "<br>");
     },
   },
 
@@ -167,11 +193,11 @@ export default {
 
   methods: {
     async loadItems({ page, itemsPerPage }) {
-      this.loading = true;
-
       const config = useRuntimeConfig();
       const token = useCookie("token");
       const apiUrl = config.public.API_BASE_URL;
+
+      this.loading = true;
 
       const offset = (page - 1) * itemsPerPage;
       try {
@@ -232,6 +258,7 @@ export default {
 
     close() {
       this.dialog = false;
+      this.alertMessage = "";
       this.$nextTick(() => {
         this.editedItem = Object.assign({}, this.defaultItem);
         this.editedIndex = -1;
@@ -247,23 +274,38 @@ export default {
     },
 
     async save() {
+      const config = useRuntimeConfig();
+      const token = useCookie("token");
+      const apiUrl = config.public.API_BASE_URL;
+
       try {
         if (this.editedIndex > -1) {
           await this.$emit("update", this.editedItem);
         } else {
-          await this.$emit("create", this.editedItem);
+          await $fetch(`${apiUrl}/user/create`, {
+            method: "POST",
+            body: JSON.stringify(this.editedItem),
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `${token.value}`,
+            },
+            onResponseError({ response }) {
+              throw response._data;
+            },
+          });
         }
+
         this.alertMessage = "";
         this.close();
-
         this.serverItems = [];
         this.totalItems = 0;
         this.loading = true;
         this.itemsPerPage = 10;
         await this.loadItems({ page: 1, itemsPerPage: this.itemsPerPage });
       } catch (error) {
-        this.alertMessage = error?.message || "Failed to save user!";
+        this.alertMessage = error?.message;
         console.error("Save error:", error);
+        this.$emit("error", error);
         this.dialog = true;
       }
     },
