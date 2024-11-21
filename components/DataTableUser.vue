@@ -306,7 +306,7 @@ export default {
       try {
         if (this.editedIndex > -1) {
           await $fetch(`${apiUrl}/user/update/${this.editedItem.id}`, {
-            method: "PUT",
+            method: "PATCH",
             body: JSON.stringify(this.editedItem),
             headers: {
               "Content-Type": "application/json",
