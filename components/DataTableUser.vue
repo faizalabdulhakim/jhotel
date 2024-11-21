@@ -51,7 +51,6 @@
               <v-container>
                 <v-alert
                   v-if="alertMessage"
-                  title="Create User Failed"
                   type="error"
                   closable
                   density="compact"
@@ -87,7 +86,7 @@
                       label="Role"
                     ></v-select>
                   </v-col>
-                  <v-col cols="12">
+                  <v-col cols="12" v-if="editedIndex === -1">
                     <v-text-field
                       v-model="editedItem.password"
                       required
@@ -96,16 +95,29 @@
                       label="Password"
                     ></v-text-field>
                   </v-col>
+                  <v-col cols="12" v-if="editedIndex === -1">
+                    <v-text-field
+                      v-model="editedItem.password_confirmation"
+                      required
+                      type="password"
+                      prepend-inner-icon="mdi-lock"
+                      label="Password Confirmation"
+                    ></v-text-field>
+                  </v-col>
                 </v-row>
               </v-container>
             </v-card-text>
 
             <v-card-actions>
               <v-spacer></v-spacer>
-              <v-btn color="blue-darken-1" variant="text" @click="close">
-                Cancel
-              </v-btn>
-              <v-btn color="blue-darken-1" variant="text" @click="save">
+              <v-btn variant="text" @click="close"> Cancel </v-btn>
+              <v-btn
+                variant="flat"
+                color="blue-darken-1"
+                @click="save"
+                :disabled="this.loading"
+                :loading="this.loading"
+              >
                 Save
               </v-btn>
             </v-card-actions>
@@ -140,7 +152,7 @@
       <v-icon size="small" @click="deleteItem(item)">mdi-delete</v-icon>
     </template>
     <template v-slot:no-data>
-      <v-btn color="primary" @click="initialize">Refresh</v-btn>
+      <v-btn color="primary" @click="loadItems">Load Data</v-btn>
     </template>
   </v-data-table-server>
 </template>
@@ -169,8 +181,20 @@ export default {
     loading: true,
     totalItems: 0,
     editedIndex: -1,
-    editedItem: { name: "", email: "", role: "", password: "" },
-    defaultItem: { name: "", email: "", role: "", password: "" },
+    editedItem: {
+      name: "",
+      email: "",
+      role: "",
+      password: "",
+      password_confirmation: "",
+    },
+    defaultItem: {
+      name: "",
+      email: "",
+      role: "",
+      password: "",
+      password_confirmation: "",
+    },
   }),
 
   computed: {
@@ -250,6 +274,7 @@ export default {
         this.totalItems = 0;
         this.loading = true;
         this.itemsPerPage = 10;
+        this.$emit("success", "Success Delete User");
         await this.loadItems({ page: 1, itemsPerPage: this.itemsPerPage });
       } catch (error) {
         console.error("Delete error:", error);
@@ -280,7 +305,18 @@ export default {
 
       try {
         if (this.editedIndex > -1) {
-          await this.$emit("update", this.editedItem);
+          await $fetch(`${apiUrl}/user/update/${this.editedItem.id}`, {
+            method: "PUT",
+            body: JSON.stringify(this.editedItem),
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `${token.value}`,
+            },
+            onResponseError({ response }) {
+              throw response._data;
+            },
+          });
+          this.$emit("success", "Success Edit User");
         } else {
           await $fetch(`${apiUrl}/user/create`, {
             method: "POST",
@@ -293,6 +329,7 @@ export default {
               throw response._data;
             },
           });
+          this.$emit("success", "Success Create User");
         }
 
         this.alertMessage = "";

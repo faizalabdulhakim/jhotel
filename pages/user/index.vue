@@ -1,6 +1,18 @@
 <template>
   <NuxtLayout>
-    <h1>User Page</h1>
+    <!-- create flex -->
+    <div class="d-flex justify-space-between">
+      <h1>User Page</h1>
+      <v-alert
+        v-if="success"
+        closable
+        type="success"
+        :text="success"
+        density="compact"
+        max-width="400px"
+        @click:close="success = ''"
+      />
+    </div>
     <div>
       <v-container fluid>
         <DataTableUser
@@ -10,6 +22,7 @@
           @update="updateUser"
           @delete="deleteUser"
           @error="handleError"
+          @success="handleSuccess"
         />
       </v-container>
     </div>
@@ -23,6 +36,7 @@ const users = ref([]);
 const token = useCookie("token");
 const apiUrl = config.public.API_BASE_URL;
 const error = ref(null);
+const success = ref(null);
 
 // Fetch all users
 const fetchUsers = async () => {
@@ -49,6 +63,10 @@ const refreshUsers = async () => {
 
 const handleError = (err) => {
   error.value = err?.message || "An unexpected error occurred!";
+};
+
+const handleSuccess = (succ) => {
+  success.value = succ;
 };
 
 // Add a new user

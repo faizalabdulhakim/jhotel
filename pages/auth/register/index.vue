@@ -24,7 +24,7 @@
                 <v-text-field
                   :rules="[ruleRequired, ruleName]"
                   v-model="name"
-                  prepend-icon="mdi-account"
+                  prepend-inner-icon="mdi-account"
                   id="name"
                   name="name"
                 />
@@ -36,7 +36,7 @@
                 <v-text-field
                   :rules="[ruleRequired, ruleEmail]"
                   v-model="email"
-                  prepend-icon="mdi-email"
+                  prepend-inner-icon="mdi-email"
                   id="email"
                   name="email"
                   type="email"
@@ -49,9 +49,24 @@
                 <v-text-field
                   :rules="[ruleRequired, rulePassLen]"
                   v-model="password"
-                  prepend-icon="mdi-lock"
+                  prepend-inner-icon="mdi-lock"
                   id="password"
                   name="password"
+                  type="password"
+                />
+              </div>
+              <div class="mt-1">
+                <label
+                  class="label text-grey-darken-2"
+                  for="password_confirmation"
+                  >Password Confirmation</label
+                >
+                <v-text-field
+                  :rules="[ruleRequired, rulePassLen]"
+                  v-model="password_confirmation"
+                  prepend-inner-icon="mdi-lock"
+                  id="password_confirmation"
+                  name="password_confirmation"
                   type="password"
                 />
               </div>
@@ -96,6 +111,7 @@
 const name = ref("");
 const email = ref("");
 const password = ref("");
+const password_confirmation = ref("");
 const errors = ref([]);
 
 const { ruleName, ruleEmail, rulePassLen, ruleRequired } = useFormRules();
@@ -115,6 +131,7 @@ const submit = async () => {
         name: name.value,
         email: email.value,
         password: password.value,
+        password_confirmation: password_confirmation.value,
       }),
       headers: { "Content-Type": "application/json" },
       onResponseError({ response }) {
