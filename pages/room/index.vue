@@ -1,15 +1,25 @@
 <template>
   <NuxtLayout>
-    <h1>Room Page</h1>
-    <div v-if="rooms.length === 0">No data rooms</div>
-    <div v-else>
+    <div class="d-flex justify-space-between">
+      <h1>Room Page</h1>
+      <v-alert
+        v-if="success"
+        closable
+        type="success"
+        :text="success"
+        density="compact"
+        max-width="400px"
+        @click:close="success = ''"
+      />
+    </div>
+    <div>
       <v-container fluid>
         <DataTableRoom
           :items="rooms.data"
           @refresh="refreshRooms"
-          @create="addRoom"
-          @update="updateRoom"
           @delete="deleteRoom"
+          @error="handleError"
+          @success="handleSuccess"
         />
       </v-container>
     </div>
@@ -22,8 +32,9 @@ const config = useRuntimeConfig();
 const rooms = ref([]);
 const token = useCookie("token");
 const apiUrl = config.public.API_BASE_URL;
+const error = ref(null);
+const success = ref(null);
 
-// Fetch all rooms
 const fetchRooms = async () => {
   try {
     rooms.value = await $fetch(`${apiUrl}/room`, {
@@ -31,8 +42,9 @@ const fetchRooms = async () => {
         Authorization: `${token.value}`,
       },
     });
-  } catch (error) {
-    console.error("Error fetching rooms:", error);
+  } catch (err) {
+    handleError(err);
+    console.error("Error fetching rooms:", err);
   }
 };
 
@@ -40,46 +52,18 @@ onMounted(() => {
   fetchRooms();
 });
 
-// Refresh rooms
 const refreshRooms = async () => {
   await fetchRooms();
 };
 
-// Add a new room
-const addRoom = async (newRoom) => {
-  try {
-    await $fetch(`${apiUrl}/room/create`, {
-      method: "POST",
-      body: JSON.stringify(newRoom),
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `${token.value}`,
-      },
-    });
-    await refreshRooms();
-  } catch (error) {
-    console.error("Error adding room:", error);
-  }
+const handleError = (err) => {
+  error.value = err?.message || "An unexpected error occurred!";
 };
 
-// Update an existing room
-const updateRoom = async (updatedRoom) => {
-  try {
-    await $fetch(`${apiUrl}/room/update/${updatedRoom.id}`, {
-      method: "PUT",
-      body: JSON.stringify(updatedRoom),
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `${token.value}`,
-      },
-    });
-    await refreshRooms();
-  } catch (error) {
-    console.error("Error updating room:", error);
-  }
+const handleSuccess = (succ) => {
+  success.value = succ;
 };
 
-// Delete a room
 const deleteRoom = async (roomId) => {
   try {
     await $fetch(`${apiUrl}/room/delete/${roomId}`, {
@@ -87,10 +71,12 @@ const deleteRoom = async (roomId) => {
       headers: {
         Authorization: `${token.value}`,
       },
+    }).then(() => {
+      refreshRooms();
     });
-    await refreshRooms();
-  } catch (error) {
-    console.error("Error deleting room:", error);
+  } catch (err) {
+    handleError(err);
+    console.error("Error deleting room:", err);
   }
 };
 </script>

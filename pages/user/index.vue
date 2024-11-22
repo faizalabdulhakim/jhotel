@@ -1,6 +1,5 @@
 <template>
   <NuxtLayout>
-    <!-- create flex -->
     <div class="d-flex justify-space-between">
       <h1>User Page</h1>
       <v-alert
@@ -18,8 +17,6 @@
         <DataTableUser
           :items="users.data"
           @refresh="refreshUsers"
-          @create="addUser"
-          @update="updateUser"
           @delete="deleteUser"
           @error="handleError"
           @success="handleSuccess"
@@ -67,45 +64,6 @@ const handleError = (err) => {
 
 const handleSuccess = (succ) => {
   success.value = succ;
-};
-
-// Add a new user
-const addUser = async (newUser) => {
-  try {
-    await $fetch(`${apiUrl}/user/create`, {
-      method: "POST",
-      body: JSON.stringify(newUser),
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `${token.value}`,
-      },
-    }).then(() => {
-      refreshUsers();
-    });
-  } catch (err) {
-    handleError(err);
-    console.error("Error adding user:", err);
-    throw err;
-  }
-};
-
-// Update an existing user
-const updateUser = async (updatedUser) => {
-  try {
-    await $fetch(`${apiUrl}/user/update/${updatedUser.id}`, {
-      method: "PUT",
-      body: JSON.stringify(updatedUser),
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `${token.value}`,
-      },
-    }).then(() => {
-      refreshUsers();
-    });
-  } catch (err) {
-    handleError(err);
-    console.error("Error updating user:", err);
-  }
 };
 
 // Delete a user
